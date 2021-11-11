@@ -6,7 +6,7 @@ library(vegan)
 # So this is a reframing that works for me. 
 # Probably just a matter of personal taste.
 
-# the data
+####################### the data ######################## 
 # Jena
 download.file("https://figshare.com/ndownloader/files/24558608", 
               destfile = "JenaExp_arthro.csv")
@@ -52,9 +52,10 @@ for (i in 1:length(je.att)) {
   
 ####################   Omnivores' Balanced Diet Plan   #######################
 # OK, so this bit is not easy to read but it works(?) 
-# also, it borrows heavily from code that was probably written by Barnes
-# (Not sure where(/that) this happens in the code of the paper, 
-# but it is mentioned in the methods)
+# also, it borrows heavily from hand-me-down code 
+# that was probably originally written by Barnes
+# (Not sure where this happens in the code of the 
+# paper, but it is mentioned in the methods)
 
 # add biomass values in the matrix to 'manually' define the preferences
 # first create a matrix with species biomasses
