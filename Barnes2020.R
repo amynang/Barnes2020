@@ -45,6 +45,8 @@ for (i in 1:length(cc.att)) {
 
 # a list for feeding preference matrices
 mat.prefs = vector(mode = "list",length=length(je.att))
+# a list for flux matrices
+fluxes = vector(mode = "list",length=length(je.att))
 
 for (i in 1:length(je.att)) {
   
@@ -139,5 +141,13 @@ mat.prefs[[i]] = decostand(mat.prefs[[i]], "total", MARGIN = 2)
 # then make total biomass of animal prey species equal to the biomass of detritus:
 #mat.prefs[[i]][!basals, omnivores] =  mat.prefs[[i]][!basals, omnivores] * biomass.plot[1]
 ##############################################################################
+
+fluxes[[i]] <- fluxing(mat.prefs[[i]],
+                       je.att[[i]]$biomass, 
+                       je.att[[i]]$com.metabolism,
+                       je.att[[i]]$efficiency,
+                       bioms.prefs = F,
+                       bioms.losses = F,
+                       ef.level = "prey")
 
 }
