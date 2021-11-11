@@ -1,13 +1,13 @@
 library(fluxweb)
+library(vegan) 
+# https://figshare.com/articles/software/R_Code_for_Barnes_et_al_Biodiversity_enhances_the_multi-trophic_control_of_arthropod_herbivory_/12909962/1
+# The code in the link above is efficient but (to me) it is difficult to see 
+# what is going on
+# So this is a reframing that works for me. 
+# Probably just a matter of personal taste.
 
-#https://figshare.com/articles/software/R_Code_for_Barnes_et_al_Biodiversity_enhances_the_multi-trophic_control_of_arthropod_herbivory_/12909962/1
-#The code in the link above is efficient but (to me) it is difficult to see 
-#what is going on
-#So this is a reframing that works for me. 
-#Probably just a matter of personal taste.
-
-#the data
-#Jena
+# the data
+# Jena
 download.file("https://figshare.com/ndownloader/files/24558608", 
               destfile = "JenaExp_arthro.csv")
 je.com.data = read.csv("JenaExp_arthro.csv")
@@ -16,7 +16,7 @@ download.file("https://figshare.com/ndownloader/files/24558617",
               destfile = "JenaExp_matrix.csv")
 je.foodwebmat = as.matrix(read.csv("JenaExp_matrix.csv", row.names = 1))
 
-#Cedar Creek
+# Cedar Creek
 download.file("https://figshare.com/ndownloader/files/24558605", 
               destfile = "CedCrExp_arthro.csv")
 cc.com.data = read.csv("CedCrExp_arthro.csv")
@@ -25,21 +25,119 @@ download.file("https://figshare.com/ndownloader/files/24558614",
               destfile = "CedCrExp_matrix.csv")
 cc.foodwebmat = as.matrix(read.csv("CedCrExp_matrix.csv", row.names = 1))
 
-#individual attribute dataframes for each year-plot combination in Jena
+# individual attribute dataframes for each year-plot combination in Jena
 je.att = split(je.com.data, with(je.com.data, sample))
-#individual matrices for each year-plot combination in Jena
+# individual matrices for each year-plot combination in Jena
 je.web = vector(mode = "list", length=length(je.att))
 for (i in 1:length(je.att)) {
   je.web[[i]] = je.foodwebmat[je.att[[i]]$trophic.group,
                               je.att[[i]]$trophic.group]
 }
 
-#individual attribute dataframes for each year-plot combination in Cedar Creek
+# individual attribute dataframes for each year-plot combination in Cedar Creek
 cc.att = split(cc.com.data, with(cc.com.data, sample))
-#individual matrices for each year-plot combination in Cedar Creek
+# individual matrices for each year-plot combination in Cedar Creek
 cc.web = vector(mode = "list", length=length(cc.att))
 for (i in 1:length(cc.att)) {
   cc.web[[i]] = cc.foodwebmat[cc.att[[i]]$trophic.group,
                               cc.att[[i]]$trophic.group]
 }
 
+# a list for feeding preference matrices
+mat.prefs = vector(mode = "list",length=length(je.att))
+
+for (i in 1:length(je.att)) {
+  
+####################   Omnivores' Balanced Diet Plan   #######################
+# OK, so this bit is not easy to read but it works(?) 
+# also, it borrows heavily from code that was probably written by Barnes
+# (Not sure where(/that) this happens in the code of the paper, 
+# but it is mentioned in the methods)
+
+# add biomass values in the matrix to 'manually' define the preferences
+# first create a matrix with species biomasses
+mat.bioms = replicate(length(je.att[[i]]$biomass), je.att[[i]]$biomass)
+# mat.prefs contains preference of predators based on their prey biomasses
+mat.prefs[[i]] = je.web[[i]] * mat.bioms
+# then identify omnivorous species
+# these are species feeding at least on:
+# one basal species and at least one non basal species
+# we want them to feed equaly on plant animals and detritus
+basals = which(je.att[[i]]$trophic.level == "basal")
+animals = which(je.att[[i]]$trophic.level != "basal") ; #S_animals[i]=length(animals)
+plants = which(je.att[[i]]$trophic.group == "plants")        #; S_plants[i]=length(plants)
+detritus = which(je.att[[i]]$trophic.group == "detritus")
+
+#omnivores that feed on detritus plants and animals
+omnivores.c.h.d = which(colSums(mat.prefs[[i]][detritus,,drop = FALSE])>0 &
+                          colSums(mat.prefs[[i]][plants,,drop = FALSE])>0 &
+                          colSums(mat.prefs[[i]][animals,])>0)
+
+#omnivores that feed on plants and animals
+omnivores.c.h = which(colSums(mat.prefs[[i]][detritus,,drop = FALSE])==0 &
+                        colSums(mat.prefs[[i]][plants,,drop = FALSE])>0 &
+                        colSums(mat.prefs[[i]][animals,])>0)
+
+#omnivores that feed on detritus and animals
+omnivores.c.d = which(colSums(mat.prefs[[i]][detritus,,drop = FALSE])>0 &
+                        colSums(mat.prefs[[i]][plants,,drop = FALSE])==0 &
+                        colSums(mat.prefs[[i]][animals,])>0)
+
+#omnivores that feed on detritus and plants
+omnivores.h.d = which(colSums(mat.prefs[[i]][detritus,,drop = FALSE])>0 &
+                        colSums(mat.prefs[[i]][plants,,drop = FALSE])>0 &
+                        colSums(mat.prefs[[i]][animals,])==0)
+
+
+# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][animals, omnivores.c.h.d] = mat.prefs[[i]][animals, omnivores.c.h.d,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.h.d,drop=FALSE])),
+       length(omnivores.c.h.d),length(omnivores.c.h.d)) #diag(4)!=diag(4,1,1) important if single omnivore
+
+# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][plants, omnivores.c.h.d] = mat.prefs[[i]][plants, omnivores.c.h.d,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.c.h.d,drop=FALSE])),
+       length(omnivores.c.h.d),length(omnivores.c.h.d))
+
+# normalise preferences of omnivores over detritus to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][detritus, omnivores.c.h.d] = mat.prefs[[i]][detritus, omnivores.c.h.d,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.c.h.d,drop=FALSE])),
+       length(omnivores.c.h.d),length(omnivores.c.h.d))
+
+# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][animals, omnivores.c.h] = mat.prefs[[i]][animals, omnivores.c.h,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.h,drop=FALSE])),
+       length(omnivores.c.h),length(omnivores.c.h)) #diag(4)!=diag(4,1,1) important if single omnivore
+
+# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][plants, omnivores.c.h] = mat.prefs[[i]][plants, omnivores.c.h,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.c.h,drop=FALSE])),
+       length(omnivores.c.h),length(omnivores.c.h))
+
+# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][animals, omnivores.c.d] = mat.prefs[[i]][animals, omnivores.c.d,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.d,drop=FALSE])),
+       length(omnivores.c.d),length(omnivores.c.d)) #diag(4)!=diag(4,1,1) important if single omnivore
+
+# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][detritus, omnivores.c.d] = mat.prefs[[i]][detritus, omnivores.c.d,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.c.d,drop=FALSE])),
+       length(omnivores.c.d),length(omnivores.c.d)) #diag(4)!=diag(4,1,1) important if single omnivore
+
+# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][plants, omnivores.h.d] = mat.prefs[[i]][plants, omnivores.h.d,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.h.d,drop=FALSE])),
+       length(omnivores.h.d),length(omnivores.h.d))
+
+# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+mat.prefs[[i]][detritus, omnivores.h.d] = mat.prefs[[i]][detritus, omnivores.h.d,drop=FALSE] %*%
+  diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.h.d,drop=FALSE])),
+       length(omnivores.h.d),length(omnivores.h.d))
+
+mat.prefs[[i]] = decostand(mat.prefs[[i]], "total", MARGIN = 2)
+
+# then make total biomass of animal prey species equal to the biomass of detritus:
+#mat.prefs[[i]][!basals, omnivores] =  mat.prefs[[i]][!basals, omnivores] * biomass.plot[1]
+##############################################################################
+
+}
