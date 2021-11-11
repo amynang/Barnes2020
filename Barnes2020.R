@@ -48,6 +48,17 @@ mat.prefs = vector(mode = "list",length=length(je.att))
 # a list for flux matrices
 fluxes = vector(mode = "list",length=length(je.att))
 
+allmetrics = data.frame(experiment = factor("Jena"),
+                        year = integer(length(je.att)),
+                        plot = character(length(je.att)),
+                        plant.rich = integer(length(je.att)), # richness gradient
+                        tot.flux = numeric(length(je.att)),   # total energy flux
+                        pred.flux = numeric(length(je.att)),  # predation flux
+                        herb.flux = numeric(length(je.att)),  # herbivory flux
+                        top.down = numeric(length(je.att)),   # from herbivores per unit herbivore biomass
+                        bot.up = numeric(length(je.att)),     # to herbivores per unit herbivore biomass
+                        herb.press = numeric(length(je.att))) # to herbivores per unit plant biomass   
+
 for (i in 1:length(je.att)) {
   
 ####################   Omnivores' Balanced Diet Plan   #######################
@@ -70,6 +81,9 @@ basals = which(je.att[[i]]$trophic.level == "basal")
 animals = which(je.att[[i]]$trophic.level != "basal") ; #S_animals[i]=length(animals)
 plants = which(je.att[[i]]$trophic.group == "plants")        #; S_plants[i]=length(plants)
 detritus = which(je.att[[i]]$trophic.group == "detritus")
+#not relevant here but we will need to keep track of herbivores and predators
+herbivores = which(je.att[[i]]$trophic.level == "herbivore")
+predators = which(je.att[[i]]$trophic.level == "carnivore")
 
 #omnivores that feed on detritus plants and animals
 omnivores.c.h.d = which(colSums(mat.prefs[[i]][detritus,,drop = FALSE])>0 &
@@ -150,5 +164,18 @@ fluxes[[i]] <- fluxing(mat.prefs[[i]],
                        bioms.prefs = F,
                        bioms.losses = F,
                        ef.level = "prey")
+
+allmetrics[i,]$year = unique(je.att[[i]]$year)
+allmetrics[i,]$plot = unique(je.att[[i]]$plot)
+allmetrics[i,]$plant.rich = unique(je.att[[i]]$plant.div)          # richness gradient
+allmetrics[i,]$tot.flux = sum(fluxes[[i]])                         # total energy flux              
+allmetrics[i,]$pred.flux = sum(fluxes[[i]][animals, ])             # predation flux
+allmetrics[i,]$herb.flux = sum(fluxes[[i]][plants, ])              # herbivory flux
+allmetrics[i,]$top.down = sum(fluxes[[i]][herbivores, predators])/ # from herbivores per unit herbivore biomass
+                          sum(je.att[[i]][herbivores,"biomass"])
+allmetrics[i,]$bot.up = sum(fluxes[[i]][plants, herbivores])/      # to herbivores per unit herbivore biomass
+                        sum(je.att[[i]][herbivores,"biomass"])
+allmetrics[i,]$herb.press = sum(fluxes[[i]][plants, herbivores])/  # to herbivores per unit plant biomass 
+                            sum(je.att[[i]][plants,"biomass"])     
 
 }
