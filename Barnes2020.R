@@ -1,5 +1,9 @@
 library(fluxweb)
 library(vegan) 
+library(ggplot2)
+library(patchwork)
+library(glmmTMB)
+library(DHARMa)
 # https://figshare.com/articles/software/R_Code_for_Barnes_et_al_Biodiversity_enhances_the_multi-trophic_control_of_arthropod_herbivory_/12909962/1
 # The code in the link above is efficient but (to me) it is difficult to see 
 # what is going on
@@ -329,5 +333,28 @@ for (i in 1:length(cc.att)) {
 }
 
 allmetrics = rbind(allmetrics1,allmetrics2)
+allmetrics$year = as.factor(allmetrics$year)
 
-plot(log(allmetrics$tot.flux) ~ allmetrics$plant.rich)
+g1 = ggplot(allmetrics, 
+            aes(plant.rich, log(tot.flux), color = experiment)) +     
+     geom_point(position = position_jitterdodge(jitter.width = 0.30), alpha = 0.3)+
+     geom_smooth(method=lm) +
+     theme_classic()
+g2 = ggplot(allmetrics, 
+            aes(plant.rich, log(pred.flux), color = experiment)) +     
+     geom_point(position = position_jitterdodge(jitter.width = 0.30), alpha = 0.3)+
+     geom_smooth(method=lm) +
+     theme_classic()
+g3 = ggplot(allmetrics, 
+            aes(plant.rich, log(herb.flux), color = experiment)) +     
+     geom_point(position = position_jitterdodge(jitter.width = 0.30), alpha = 0.3)+
+     geom_smooth(method=lm) +
+     theme_classic()
+
+(g1+g2+g3)
+
+m1 = glmmTMB(log(tot.flux) ~ plant.rich + (1|year),
+             data = allmetrics)
+m1_simres <- simulateResiduals(m1, n = 1000, seed = 123) #simulates residuals from the fitted model
+plot(m1_simres, quantreg = T)
+summary(m1)
