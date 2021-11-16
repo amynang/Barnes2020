@@ -63,6 +63,18 @@ allmetrics1 = data.frame(experiment = factor("Jena"),
                          bot.up = numeric(length(je.att)),     # to herbivores per unit herbivore biomass
                          herb.press = numeric(length(je.att))) # to herbivores per unit plant biomass   
 
+# This loop works through all the year-plot foodwebs of the respective experiment.
+# In each one first it creates a feeding preference matrix such that omnivores are 
+# feeding equally from their resource channels (animals, plants, detritus) and within 
+# each channel they eat from individual nodes based on the relative availability 
+# of each node. Predators are eating from animal nodes also based on relative 
+# availability (biomass).
+# Then it calculates fluxes for each foodweb and places the resulting flux matrix
+# in the respective slot in the list "fluxes".
+# Then it calculates flux aggregates of interest like fluxes from herbivores and
+# standardizes them by the appropriate biomass. These end up in the "allmetrics"
+# dataframe with one row per foodweb (plot-year combination)
+
 for (i in 1:length(je.att)) {
   
 ####################   Omnivores' Balanced Diet Plan   #######################
@@ -207,6 +219,18 @@ allmetrics2 = data.frame(experiment = factor("Cedar"),
                          top.down = numeric(length(cc.att)),   # from herbivores per unit herbivore biomass
                          bot.up = numeric(length(cc.att)),     # to herbivores per unit herbivore biomass
                          herb.press = numeric(length(cc.att))) # to herbivores per unit plant biomass   
+
+# This loop works through all the year-plot foodwebs of the respective experiment.
+# In each one first it creates a feeding preference matrix such that omnivores are 
+# feeding equally from their resource channels (animals, plants, detritus) and within 
+# each channel they eat from individual nodes based on the relative availability 
+# of each node. Predators are eating from animal nodes also based on relative 
+# availability (biomass).
+# Then it calculates fluxes for each foodweb and places the resulting flux matrix
+# in the respective slot in the list "fluxes".
+# Then it calculates flux aggregates of interest like fluxes from herbivores and
+# standardizes them by the appropriate biomass. These end up in the "allmetrics"
+# dataframe with one row per foodweb (plot-year combination)
 
 for (i in 1:length(cc.att)) {
   
