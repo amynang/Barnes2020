@@ -1,3 +1,5 @@
+rm(list=ls())
+
 library(fluxweb)
 library(vegan) 
 library(ggplot2)
@@ -92,7 +94,7 @@ mat.prefs[[i]] = je.web[[i]] * mat.bioms
 # then identify omnivorous species
 # these are species feeding at least on:
 # one basal species and at least one non basal species
-# we want them to feed equaly on plant animals and detritus
+# we want them to feed equally on plant animals and detritus
 basals = which(je.att[[i]]$trophic.level == "basal")
 animals = which(je.att[[i]]$trophic.level != "basal") ; #S_animals[i]=length(animals)
 plants = which(je.att[[i]]$trophic.group == "plants")        #; S_plants[i]=length(plants)
@@ -122,47 +124,47 @@ omnivores.h.d = which(colSums(mat.prefs[[i]][detritus,,drop = FALSE])>0 &
                         colSums(mat.prefs[[i]][animals,])==0)
 
 
-# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][animals, omnivores.c.h.d] = mat.prefs[[i]][animals, omnivores.c.h.d,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.h.d,drop=FALSE])),
        length(omnivores.c.h.d),length(omnivores.c.h.d)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][plants, omnivores.c.h.d] = mat.prefs[[i]][plants, omnivores.c.h.d,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.c.h.d,drop=FALSE])),
        length(omnivores.c.h.d),length(omnivores.c.h.d))
 
-# normalise preferences of omnivores over detritus to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over detritus to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][detritus, omnivores.c.h.d] = mat.prefs[[i]][detritus, omnivores.c.h.d,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.c.h.d,drop=FALSE])),
        length(omnivores.c.h.d),length(omnivores.c.h.d))
 
-# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][animals, omnivores.c.h] = mat.prefs[[i]][animals, omnivores.c.h,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.h,drop=FALSE])),
        length(omnivores.c.h),length(omnivores.c.h)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][plants, omnivores.c.h] = mat.prefs[[i]][plants, omnivores.c.h,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.c.h,drop=FALSE])),
        length(omnivores.c.h),length(omnivores.c.h))
 
-# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][animals, omnivores.c.d] = mat.prefs[[i]][animals, omnivores.c.d,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.d,drop=FALSE])),
        length(omnivores.c.d),length(omnivores.c.d)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-# normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][detritus, omnivores.c.d] = mat.prefs[[i]][detritus, omnivores.c.d,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.c.d,drop=FALSE])),
        length(omnivores.c.d),length(omnivores.c.d)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][plants, omnivores.h.d] = mat.prefs[[i]][plants, omnivores.h.d,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.h.d,drop=FALSE])),
        length(omnivores.h.d),length(omnivores.h.d))
 
-# normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+# normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
 mat.prefs[[i]][detritus, omnivores.h.d] = mat.prefs[[i]][detritus, omnivores.h.d,drop=FALSE] %*%
   diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.h.d,drop=FALSE])),
        length(omnivores.h.d),length(omnivores.h.d))
@@ -221,7 +223,7 @@ allmetrics2 = data.frame(experiment = factor("Cedar"),
                          herb.press = numeric(length(cc.att))) # to herbivores per unit plant biomass   
 
 # This loop works through all the year-plot foodwebs of the respective experiment.
-# In each one first it creates a feeding preference matrix such that omnivores are 
+# In each one, first it creates a feeding preference matrix such that omnivores are 
 # feeding equally from their resource channels (animals, plants, detritus) and within 
 # each channel they eat from individual nodes based on the relative availability 
 # of each node. Predators are eating from animal nodes also based on relative 
@@ -249,7 +251,7 @@ for (i in 1:length(cc.att)) {
   # then identify omnivorous species
   # these are species feeding at least on:
   # one basal species and at least one non basal species
-  # we want them to feed equaly on plant animals and detritus
+  # we want them to feed equally on plant animals and detritus
   basals = which(cc.att[[i]]$trophic.level == "basal")
   animals = which(cc.att[[i]]$trophic.level != "basal") ; #S_animals[i]=length(animals)
   plants = which(cc.att[[i]]$trophic.group == "plants")        #; S_plants[i]=length(plants)
@@ -279,47 +281,47 @@ for (i in 1:length(cc.att)) {
                           colSums(mat.prefs[[i]][animals,])==0)
 
 
-  # normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][animals, omnivores.c.h.d] = mat.prefs[[i]][animals, omnivores.c.h.d,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.h.d,drop=FALSE])),
          length(omnivores.c.h.d),length(omnivores.c.h.d)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-  # normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][plants, omnivores.c.h.d] = mat.prefs[[i]][plants, omnivores.c.h.d,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.c.h.d,drop=FALSE])),
          length(omnivores.c.h.d),length(omnivores.c.h.d))
 
-  # normalise preferences of omnivores over detritus to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over detritus to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][detritus, omnivores.c.h.d] = mat.prefs[[i]][detritus, omnivores.c.h.d,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.c.h.d,drop=FALSE])),
          length(omnivores.c.h.d),length(omnivores.c.h.d))
 
-  # normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][animals, omnivores.c.h] = mat.prefs[[i]][animals, omnivores.c.h,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.h,drop=FALSE])),
          length(omnivores.c.h),length(omnivores.c.h)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-  # normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][plants, omnivores.c.h] = mat.prefs[[i]][plants, omnivores.c.h,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.c.h,drop=FALSE])),
          length(omnivores.c.h),length(omnivores.c.h))
 
-  # normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][animals, omnivores.c.d] = mat.prefs[[i]][animals, omnivores.c.d,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][animals, omnivores.c.d,drop=FALSE])),
          length(omnivores.c.d),length(omnivores.c.d)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-  # normalise preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over animals to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][detritus, omnivores.c.d] = mat.prefs[[i]][detritus, omnivores.c.d,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.c.d,drop=FALSE])),
          length(omnivores.c.d),length(omnivores.c.d)) #diag(4)!=diag(4,1,1) important if single omnivore
 
-  # normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][plants, omnivores.h.d] = mat.prefs[[i]][plants, omnivores.h.d,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][plants, omnivores.h.d,drop=FALSE])),
          length(omnivores.h.d),length(omnivores.h.d))
 
-  # normalise preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
+  # normalize preferences of omnivores over plants to 1: (sum of prey prefs for omn is 1)
   mat.prefs[[i]][detritus, omnivores.h.d] = mat.prefs[[i]][detritus, omnivores.h.d,drop=FALSE] %*%
     diag(1/colSums(as.matrix(mat.prefs[[i]][detritus, omnivores.h.d,drop=FALSE])),
          length(omnivores.h.d),length(omnivores.h.d))
@@ -382,3 +384,11 @@ m1 = glmmTMB(log(tot.flux) ~ plant.rich + (1|year),
 m1_simres <- simulateResiduals(m1, n = 1000, seed = 123) #simulates residuals from the fitted model
 plot(m1_simres, quantreg = T)
 summary(m1)
+
+
+m2 = glmmTMB(log(top.down/bot.up) ~ plant.rich + (1|year),
+             data = allmetrics[allmetrics$top.down>0,])
+m2_simres <- simulateResiduals(m2, n = 1000, seed = 123) #simulates residuals from the fitted model
+plot(m2_simres, quantreg = T)
+summary(m2)
+
