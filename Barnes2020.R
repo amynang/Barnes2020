@@ -4,8 +4,12 @@ library(fluxweb)
 library(vegan) 
 library(ggplot2)
 library(patchwork)
+library(parallel)
+library(brms)
 library(glmmTMB)
 library(DHARMa)
+n.cores<-detectCores()
+
 # https://figshare.com/articles/software/R_Code_for_Barnes_et_al_Biodiversity_enhances_the_multi-trophic_control_of_arthropod_herbivory_/12909962/1
 # The code in the link above is efficient but (to me) it is difficult to see 
 # what is going on
@@ -79,7 +83,7 @@ allmetrics1 = data.frame(experiment = factor("Jena"),
 
 for (i in 1:length(je.att)) {
   
-####################   Omnivores' Balanced Diet Plan   #######################
+####################   Omnivores' Balanced Diet Plan   #########################
 # OK, so this bit is not easy to read but it works(?)
 # also, it borrows heavily from hand-me-down code
 # that was probably originally written by Barnes
@@ -173,7 +177,7 @@ mat.prefs[[i]] = decostand(mat.prefs[[i]], "total", MARGIN = 2)
 
 # then make total biomass of animal prey species equal to the biomass of detritus:
 #mat.prefs[[i]][!basals, omnivores] =  mat.prefs[[i]][!basals, omnivores] * biomass.plot[1]
-##############################################################################
+################################################################################
 
 fluxes[[i]] <- fluxing(mat.prefs[[i]],
                        je.att[[i]]$biomass, 
@@ -392,3 +396,18 @@ m2_simres <- simulateResiduals(m2, n = 1000, seed = 123) #simulates residuals fr
 plot(m2_simres, quantreg = T)
 summary(m2)
 
+
+
+m.1 <- brm(bf(log(tot.flux) ~ log(plant.rich) + (1|year)),
+           chains = 4,
+           iter = 2000,
+           control = list(adapt_delta = .99),
+           cores = n.cores,
+           data = allmetrics)
+
+pp = brms::pp_check(m.1)
+pp + theme_bw()
+plot(m.1)
+#plot_model(m.1)
+brms::conditional_effects(m.1)
+summary(m.1)
