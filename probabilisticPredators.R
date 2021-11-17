@@ -12,11 +12,9 @@ library(glmmTMB)
 library(DHARMa)
 n.cores<-detectCores()
 
-# https://figshare.com/articles/software/R_Code_for_Barnes_et_al_Biodiversity_enhances_the_multi-trophic_control_of_arthropod_herbivory_/12909962/1
-# The code in the link above is efficient but (to me) it is difficult to see 
-# what is going on
-# So this is a "rephrasing" that works for me. 
-# Probably just a matter of personal taste.
+# This script has Barnes2020.R as its basis but creates 1000 versions of each food
+# web which incorporate uncertainty of feeding preferences. 
+# See sections"Uncertainty" and "Multiverse" for details
 
 ####################### the data ######################## 
 # Jena
@@ -404,10 +402,10 @@ allmetrics = rbind(allmetrics1,allmetrics2)
 # versions. In each one of them, consumers' realised preferences deviate somewhat
 # from our expectations (See "Uncertainty"). As a result of this variation, 
 # fluxes also vary across the thousand versions of our foodwebs.
-# We can now run 1000 regression models to see wether the effect of our predictor,
+# We can now run 1000 regression models to see whether the effect of our predictor,
 # plant richness, is consistent given this variation. 
 # The simplest way to do this would be to examine the distribution of our point 
-# estimates as well as the lower bound of our 95% credible interval in relation 
+# estimates as well as the lower bound of our 95% credible intervals in relation 
 # to zero. (This may or may not be what Benjamin had in mind) 
 
 thousand[[k]] = allmetrics
