@@ -421,6 +421,23 @@ else cat('\014')
 #list.save(thousand, "thousand.rds") #saves the list to wd
 #thousand <- readRDS("thousand.rds") #loads the list from wd
 
+
+willnotwork = as.data.frame(matrix(NA,1000,10))
+
+for (i in 1:1000) {
+  willnotwork[i,] = thousand[[i]][2,]
+}
+plot(density(willnotwork[,5]))
+plot(density(willnotwork[,6]))
+plot(density(willnotwork[,7]))
+plot(density(willnotwork[,8]))
+plot(density(willnotwork[,9]))
+plot(density(willnotwork[,10]))
+
+
+
+
+
 for (i in 1:1000) {
   thousand[[i]]$year = as.factor(thousand[[i]]$year)
   thousand[[i]]$plot = as.factor(thousand[[i]]$plot)
