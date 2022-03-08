@@ -411,7 +411,7 @@ allmetrics = rbind(allmetrics1,allmetrics2)
 thousand[[k]] = allmetrics
 
 ############################## Show loop progress ##############################
-cat(paste0(round((k/1000)*100), '% completed'))
+cat(paste0(round((k/1000) * 100), '% completed'))
 Sys.sleep(.05)
 if (k == 1000) cat(': Done')
 else cat('\014')
@@ -420,19 +420,59 @@ else cat('\014')
 
 #list.save(thousand, "thousand.rds") #saves the list to wd
 #thousand <- readRDS("thousand.rds") #loads the list from wd
+thou = do.call(rbind, thousand)
 
+ggplot(thou[thou$experiment=="Jena" & 
+            thou$year==2010 & 
+            thou$plot %in% c("B1A01","B1A04","B1A03"), ], aes(tot.flux, color = plot)) + 
+  geom_line(stat="density") + 
+  theme_classic() +
+  theme(legend.position = "none")
 
-willnotwork = as.data.frame(matrix(NA,1000,10))
+library(ggridges)
+library(viridis)
+library(hrbrthemes)
+ggplot(thou[thou$experiment=="Jena" & 
+            thou$year==2012 
+          & thou$plant.rich == 8
+          , ], aes(x = log(tot.flux), y = plot, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 2, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "Temp. [F]", option = "C") +
+  #labs(title = 'Temperatures in Lincoln NE in 2016') +
+  #theme_ipsum() +
+  facet_grid(plant.rich~.) +
+  theme(
+    legend.position="none",
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 8)
+  )
+  
+ggplot(thou, aes(x = log(tot.flux), y = plot, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+  scale_fill_viridis(name = "Temp. [F]", option = "C") +
+  #labs(title = 'Temperatures in Lincoln NE in 2016') +
+  #theme_ipsum() +
+  facet_grid(plant.rich~.) +
+theme(
+  legend.position="none",
+  panel.spacing = unit(0.1, "lines"),
+  strip.text.x = element_text(size = 8)
+)  
+  
+  
+  
+
+doesitwork = as.data.frame(matrix(NA,1000,10))
 
 for (i in 1:1000) {
-  willnotwork[i,] = thousand[[i]][2,]
+  doesitwork[i,] = thousand[[i]][1,]
 }
-plot(density(willnotwork[,5]))
-plot(density(willnotwork[,6]))
-plot(density(willnotwork[,7]))
-plot(density(willnotwork[,8]))
-plot(density(willnotwork[,9]))
-plot(density(willnotwork[,10]))
+plot(density(log(doesitwork[, 5])))
+plot(density(doesitwork[, 7]))
+plot(density(doesitwork[, 8]))
+plot(density(doesitwork[, 9]))
+plot(density(doesitwork[,10]))
+plot(density(doesitwork[, 6]))
 
 
 
